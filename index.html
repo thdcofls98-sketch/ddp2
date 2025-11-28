@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDP: 빛으로 펼치는 시간의 여행</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #0a0e1a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn-primary {
+            background: #FFD700;
+            color: #000;
+            padding: 1rem 2.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary:hover {
+            background: #FFA500;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-secondary {
+            padding: 1rem 2.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            background: transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .btn-secondary:hover {
+            background: #FFD700;
+            color: #000;
+        }
+
+        .video-card {
+            background: rgba(20, 20, 30, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            border-color: #FFD700;
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #FFD700;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .feature-card {
+            background: rgba(20, 20, 30, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            transition: all 0.3s;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            border-color: #FFD700;
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #1a1a2a, #2a2a3a);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-thumbnail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .video-card:hover .video-thumbnail-overlay {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)) !important;
+        }
+
+        .play-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 215, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .video-card:hover .play-icon {
+            background: #FFD700;
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 0;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-inner {
+            min-height: 100%;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        #modal-content {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        /* 스크롤바 스타일링 */
+        #modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #modal-content::-webkit-scrollbar-track {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        #modal-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        #modal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.7);
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #FFD700;
+        }
+
+        .era-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .timeline-container {
+            position: relative;
+            padding: 4rem 0;
+            overflow-x: auto;
+        }
+
+        .timeline-line {
+            position: relative;
+            height: 4px;
+            background: linear-gradient(to right, #8B4513, #FFD700);
+            margin: 2rem 0;
+        }
+
+        .timeline-point {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+        }
+
+        .timeline-dot {
+            width: 16px;
+            height: 16px;
+            background: #FFD700;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .timeline-year {
+            color: #FFD700;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-label {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        /* 3D Simulator Styles */
+        #canvas-container {
+            width: 100%;
+            height: 600px;
+            position: relative;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .control-panel {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            width: 280px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            z-index: 10;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+
+        .control-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-section h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .pattern-btn {
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .pattern-btn:hover {
+            transform: scale(1.05);
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .pattern-btn.active {
+            background: #FFD700;
+            border-color: #FFD700;
+            color: #000;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .color-btn {
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active {
+            border-width: 3px;
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .slider-group {
+            margin-bottom: 1rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #FFD700;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #FFD700;
+            cursor: pointer;
+            border: none;
+        }
+
+        .time-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .time-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .time-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .time-btn.active {
+            background: #FFD700;
+            border-color: #FFD700;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .video-select-dropdown {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .video-select-dropdown:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #FFD700;
+        }
+
+        .video-select-dropdown option {
+            background: #1a1a1a;
+            color: white;
+            padding: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .control-panel {
+                width: 240px;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gradient">DDP × 시간 여행</h1>
+            <div class="flex gap-6">
+                <a href="#home" class="nav-link">홈</a>
+                <a href="info.html" class="nav-link">프로젝트 소개</a>
+                <a href="#timeline" class="nav-link">시간의 흐름</a>
+                <a href="#layers" class="nav-link">7개의 시대</a>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden"
+        style="background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 100%);">
+        <div id="stars" class="absolute inset-0"></div>
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <h1 id="hero-title" class="text-5xl md:text-7xl font-black mb-4 opacity-0 translate-y-10">
+                <span class="text-white">빛으로 펼치는,</span><br>
+                <span class="text-gradient" style="font-size: 1.2em;">동대문의 시간 여행</span>
+            </h1>
+            <p id="hero-subtitle" class="text-xl md:text-2xl mb-8 text-gray-300 opacity-0 translate-y-10">
+                100년의 역사가 겹쳐진 땅 위에서<br>
+                AI와 미디어아트로 펼쳐지는 7개의 시대
+            </p>
+            <div id="hero-cta" class="flex gap-4 justify-center opacity-0 translate-y-10">
+                <button onclick="scrollToSection('layers')" class="btn-primary">
+                    시간 여행 시작하기
+                </button>
+                <a href="info.html" class="btn-secondary" style="text-decoration: none; display: inline-block;">
+                    프로젝트 소개
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why This Project Matters -->
+    <section id="intro" class="py-20" style="background: linear-gradient(to bottom, #0a0e1a, #1a1a2e);">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">
+                <span class="text-gradient">왜 이 프로젝트가 필요한가?</span>
+            </h2>
+
+            <div class="max-w-4xl mx-auto mb-16">
+                <p class="text-xl text-gray-300 text-center leading-relaxed mb-6">
+                    도시는 끊임없이 변화하지만, 그 변화의 이유와 과정은 쉽게 잊힙니다.
+                </p>
+                <p class="text-lg text-gray-400 text-center leading-relaxed mb-4">
+                    동대문디자인플라자(DDP)가 들어선 이 땅은 조선시대 군사 요충지에서 식민지 체육장으로, 민족 저항의 광장에서 철거와 공백의 시대를 거쳐 오늘날 문화 플랫폼이 되기까지 <span
+                        class="text-yellow-400 font-bold">100년이 넘는 격변의 역사</span>를 품고 있습니다.
+                </p>
+                <p class="text-lg text-gray-400 text-center leading-relaxed">
+                    하지만 대부분의 시민과 방문객은 화려한 곡선 건축물과 미디어아트만을 기억할 뿐, 그 아래 묻힌 이간수문도, 경성운동장의 함성도, 노점상의 삶도, 철거된 공동체의 목소리도 알지
+                    못합니다.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="feature-card">
+                    <div class="text-5xl mb-4">📖</div>
+                    <h3 class="text-2xl font-bold mb-4 text-yellow-400">역사적 맥락의 가시화</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        DDP는 단순한 건축물이 아닌 '시간의 켜'입니다. 지하 유구부터 현재 파사드까지, 보이지 않는 역사를 빛과 영상으로 드러냄으로써 장소의 진정한 가치를 전달합니다.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="text-5xl mb-4">👥</div>
+                    <h3 class="text-2xl font-bold mb-4 text-yellow-400">비판적 사고의 촉발</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        아름다운 건축 이면의 갈등(원주민 소외, 상권 단절)을 숨기지 않고 질문으로 제시합니다. "누구를 위한 공간인가?"라는 공공성 이슈를 관람자 스스로 사유하게 합니다.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="text-5xl mb-4">🗄️</div>
+                    <h3 class="text-2xl font-bold mb-4 text-yellow-400">디지털 아카이브로서의 역할</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        실제 파사드는 일시적이지만, 웹 플랫폼은 영구 보존됩니다. 교육·연구·시민 참여의 자료로 활용 가능하며, 도시재생 프로젝트의 모범 사례이자 반성 자료가 됩니다.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="mt-16 max-w-5xl mx-auto bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-700/30 rounded-2xl p-8">
+                <p class="text-lg text-gray-200 text-center leading-relaxed mb-4">
+                    <span class="text-yellow-400 font-bold">자하 하디드</span>의 곡선은 서울의 산세와 도성의 흐름을 담았지만, 그 곡선이 지나는 <span
+                        class="text-yellow-400 font-bold">'시간'</span>까지 담지는 못했습니다.
+                </p>
+                <p class="text-xl text-white text-center font-bold">
+                    이 프로젝트는 DDP의 222m 외벽을 과거와 현재, 성공과 실패, 빛과 그림자를 모두 품은 <span class="text-yellow-400">'시간의 캔버스'</span>로
+                    재구성합니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline" class="py-20 bg-black">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-4">
+                <span class="text-gradient">시간의 흐름</span>
+            </h2>
+
+            <div class="timeline-container max-w-6xl mx-auto mt-16">
+                <div class="timeline-line relative">
+                    <div class="timeline-point" style="left: 0%;">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">조선시대</div>
+                        <div class="timeline-label">한양도성<br>이간수문</div>
+                    </div>
+                    <div class="timeline-point" style="left: 20%;">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">1925</div>
+                        <div class="timeline-label">경성운동장<br>건립</div>
+                    </div>
+                    <div class="timeline-point" style="left: 35%;">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">1945</div>
+                        <div class="timeline-label">해방<br>서울운동장</div>
+                    </div>
+                    <div class="timeline-point" style="left: 55%;">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">1984</div>
+                        <div class="timeline-label">동대문<br>운동장</div>
+                    </div>
+                    <div class="timeline-point" style="left: 75%;">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2008</div>
+                        <div class="timeline-label">철거<br>공백</div>
+                    </div>
+                    <div class="timeline-point" style="left: 90%;">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2014</div>
+                        <div class="timeline-label">DDP<br>개관</div>
+                    </div>
+                    <div class="timeline-point" style="left: 100%;">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-year">2024</div>
+                        <div class="timeline-label">누적 방문<br>1억 명</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-16">
+                <h3 class="text-3xl font-bold text-white mb-6">당신이 보게 될 7개의 빛 서사는</h3>
+                <p class="text-xl text-gray-300 mb-8">
+                    단순한 영상이 아닌, <span class="text-yellow-400 font-bold">도시의 기억을 복원하는 행위</span>입니다.
+                </p>
+                <button onclick="scrollToSection('layers')" class="btn-primary">
+                    지금 시작하기
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Layers -->
+    <section id="layers" class="py-20" style="background: linear-gradient(to bottom, #000, #0a0e1a);">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-4">
+                <span class="text-gradient">7개 시대의 빛 서사</span>
+            </h2>
+            <p class="text-center text-gray-400 mb-12 text-lg">
+                각 영상을 클릭하여 상세 정보를 확인하고 시뮬레이터에서 체험해보세요
+            </p>
+            <div id="video-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                <!-- Video cards will be generated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div id="video-modal" class="modal">
+        <div class="modal-inner">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto bg-gray-900 rounded-2xl border border-gray-800 p-8 relative">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl">
+                        ×
+                    </button>
+                    <h2 id="modal-title" class="text-3xl font-bold mb-6"></h2>
+                    <div id="modal-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Video data matching the screenshots
+        const videoLayers = [
+    {
+        id: 1,
+        title: "지층의 흔적",
+        subtitle: "성벽과 수문이 깨어난 밤",
+        era: "조선시대",
+        description: "한양도성의 이간수문과 성곽이 자리했던 이 땅, 600년 역사의 시작점.",
+        color: "#8B4513",
+        historicalContext: `<div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🏰 한양도성과 이간수문</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    현재 DDP가 자리한 곳은 조선시대 한양도성의 동쪽 성곽이 지나던 요충지였습니다. 특히 이 일대에는 <strong class="text-yellow-400">이간수문(二間水門)</strong>이라는 중요한 수로 시설이 있었는데, 이는 청계천의 물이 성 밖으로 흘러나가도록 설계된 석조 수문이었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    이간수문은 두 개의 수문 통로를 가진 구조로, 한양도성 축조 당시인 <strong class="text-yellow-400">1396년(태조 5년)</strong>에 처음 건설되었습니다. 이후 여러 차례 보수를 거쳤으며, 특히 1760년(영조 36년)에는 대규모 개축이 이루어졌습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🛡️ 군사적·행정적 요충지</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    이 지역은 흥인지문(동대문)과 가까운 곳으로, 동쪽 방향의 교통과 방어를 담당하는 전략적 요충지였습니다. 성문을 통해 양주, 광나루, 송파 등 동부 지역으로 이어지는 주요 도로가 시작되었고, 조선시대 내내 상업과 교역의 중심지로 번성했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    특히 이 일대는 <strong class="text-yellow-400">이현(梨峴)</strong>이라 불리며, 배나무가 많아 붙여진 이름입니다. 조선 후기에는 동대문 밖 시장이 형성되어 서울에서 가장 큰 장시(場市) 중 하나가 되었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🏛️ 발굴된 유구들</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    DDP 건설 과정에서 이루어진 발굴 조사(2008-2009)를 통해 조선시대 이간수문의 석축과 성벽 기단부가 발견되었습니다. 이 유구들은 현재 DDP 지하에 <strong class="text-yellow-400">'동대문역사문화공원'</strong>으로 보존되어 일반에 공개되고 있습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    발굴된 유물 중에는 조선시대 도로 포장 흔적, 배수로, 기와와 도자기 파편 등이 포함되어 있으며, 이를 통해 이 지역이 단순한 성곽 외곽이 아닌 활발한 생활공간이었음을 확인할 수 있습니다.
+                </p>
+            </div>
+            
+            <div class="border-l-4 border-yellow-400 pl-6 py-4 bg-gray-800/50 rounded">
+                <p class="text-gray-300 italic">
+                    "한양도성의 동쪽 관문이었던 이 땅은, 600년이 지난 지금도 DDP 지하에서 당시의 숨결을 전하고 있습니다. 현대적 건축물 아래 잠든 조선의 기억은, 이 프로젝트를 통해 다시 한번 빛을 발합니다."
+                </p>
+            </div>
+        </div>`
+    },
+    {
+        id: 2,
+        title: "경기장의 함성과 균열",
+        subtitle: "통치와 저항의 이중주",
+        era: "1925-1945 (일제강점기)",
+        description: "경성운동장 건립부터 해방까지, 식민통치와 민족저항이 교차하던 20년.",
+        color: "#4A5568",
+        historicalContext: `<div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🏟️ 경성운동장의 탄생 (1925)</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1925년 10월 15일, 일제는 이 자리에 <strong class="text-yellow-400">경성운동장(京城運動場)</strong>을 개장했습니다. 당시 동양 최대 규모를 자랑하던 이 운동장은 2만 5천 명을 수용할 수 있었으며, 트랙, 축구장, 야구장을 갖춘 종합 체육시설이었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    하지만 이 운동장의 건립 목적은 단순히 체육 진흥이 아니었습니다. 일제는 이곳을 <strong class="text-yellow-400">식민통치의 정당성을 선전하고, 조선인을 황국신민화하기 위한 문화정책의 거점</strong>으로 삼았습니다. 각종 관제 행사, 일왕 생일 축하 행사, 황국신민서사 제창 등이 이곳에서 강제로 진행되었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">⚾ 스포츠와 민족의식</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    역설적이게도 경성운동장은 조선인에게 민족의식을 고취시키는 장소가 되기도 했습니다. 1926년부터 시작된 <strong class="text-yellow-400">경평전(京平戰)</strong>은 경성과 평양의 야구팀이 대결하는 경기로, 조선인들에게 열렬한 호응을 받았습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    특히 1936년 베를린 올림픽 마라톤에서 우승한 <strong class="text-yellow-400">손기정 선수</strong>의 귀국 환영식이 이곳에서 열렸을 때, 일장기를 단 시상대에 오른 손기정의 모습은 조선인들에게 깊은 상처와 동시에 저항 의지를 심어주었습니다. 동아일보가 손기정의 가슴에 달린 일장기를 지운 사진을 게재한 '일장기 말소 사건'은 이러한 민족감정을 대변하는 상징적 사건이었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🎭 통제와 저항의 이중주</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    경성운동장은 일제의 군중 동원과 통제의 공간이었지만, 동시에 조선인들이 모여 집단적 정체성을 확인하는 드문 공공 공간이기도 했습니다. 일제는 이를 경계하여 경찰력을 대거 배치했고, 1930년대 후반 전시체제기에는 학도병 출정식, 전쟁 물자 공출 독려 집회 등 전쟁 협력을 강요하는 장소로 변모했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    1945년 8월 15일, 해방과 함께 경성운동장은 일제 잔재를 청산하는 상징적 공간이 되었고, 이후 <strong class="text-yellow-400">서울운동장</strong>으로 이름을 바꾸며 새로운 시대를 맞이하게 됩니다.
+                </p>
+            </div>
+            
+            <div class="border-l-4 border-yellow-400 pl-6 py-4 bg-gray-800/50 rounded">
+                <p class="text-gray-300 italic">
+                    "경성운동장은 식민지 조선의 모순을 가장 극명하게 보여주는 공간이었습니다. 통치의 도구이자 저항의 무대, 억압의 상징이자 희망의 광장. 이 이중성은 이후 이 땅이 겪을 모든 변화의 예고편이었습니다."
+                </p>
+            </div>
+        </div>`
+    },
+    {
+        id: 3,
+        title: "해방과 동원의 광장",
+        subtitle: "국가이념과 의식의 획일화",
+        era: "1945-1983",
+        description: "해방의 기쁨과 전쟁의 상흔, 그리고 관제 행사의 광장으로 변모한 시기.",
+        color: "#2D3748",
+        historicalContext: `<div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🇰🇷 해방과 서울운동장</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1945년 8월 15일 해방 이후, 경성운동장은 <strong class="text-yellow-400">서울운동장</strong>으로 개칭되며 민족국가 건설의 열망이 표출되는 광장이 되었습니다. 1945년 12월 19일에는 신탁통치 반대 국민대회가 이곳에서 열렸고, 수만 명의 시민이 운집하여 민족자결의 의지를 표명했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    하지만 곧 남북 분단과 좌우 대립의 격화로, 이 광장은 정치적 집회와 충돌의 장소로 변모하게 됩니다. 1946년 대구 10월 항쟁 규탄 대회, 1948년 대한민국 정부 수립 축하 행사 등이 이곳에서 열렸습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">⚔️ 한국전쟁과 재건</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1950년 6월 25일, 한국전쟁이 발발하면서 서울운동장은 북한군의 인민군 집결지로 사용되었습니다. 1950년 9월 서울 수복 이후에는 전쟁 피해 복구와 함께 반공 이념을 강화하는 각종 행사가 열렸습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1950년대 후반부터는 <strong class="text-yellow-400">국가 재건과 근대화를 상징하는 공간</strong>으로 재정립되었습니다. 1959년에는 대규모 보수공사를 거쳐 좌석을 확충하고 시설을 현대화했으며, 1960년대에는 각종 체육대회와 문화행사의 중심지로 자리잡았습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🎪 관제 행사와 동원의 공간</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1960-70년대 권위주의 정권 시기, 서울운동장은 <strong class="text-yellow-400">국가 동원과 통제의 핵심 공간</strong>이 되었습니다. 박정희 정권의 각종 관제 행사, 새마을운동 궐기대회, 반공 규탄대회, 국민교육헌장 제창 행사 등이 빈번하게 개최되었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1970년 전태일 분신 이후에는 노동운동 탄압 규탄 집회가 열리기도 했으나, 대부분의 정치 집회는 정부 주도하에 이루어졌습니다. 1979년 10·26 사건 이후 혼란기에는 긴급조치 발동을 정당화하는 시민대회가 열리기도 했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    1983년, 서울운동장은 더 큰 규모의 <strong class="text-yellow-400">동대문운동장</strong>으로 재건축되며 새로운 전환점을 맞이하게 됩니다.
+                </p>
+            </div>
+            
+            <div class="border-l-4 border-yellow-400 pl-6 py-4 bg-gray-800/50 rounded">
+                <p class="text-gray-300 italic">
+                    "해방의 환희와 전쟁의 참상, 재건의 열망과 독재의 억압. 서울운동장은 대한민국 현대사의 모든 굴곡을 목격한 증인이었습니다. 이 광장에서 울려 퍼진 함성과 침묵 속에는, 시민들의 희망과 좌절이 켜켜이 쌓여 있습니다."
+                </p>
+            </div>
+        </div>`
+    },
+    {
+        id: 4,
+        title: "동대문운동장 시대",
+        subtitle: "스포츠의 성지에서 노후 시설로",
+        era: "1984-2007",
+        description: "88올림픽의 열기와 2002 월드컵의 환호, 그리고 기능 상실로의 전락.",
+        color: "#1E40AF",
+        historicalContext: `<div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🏟️ 동대문운동장 개장 (1984)</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1984년 4월 1일, 서울운동장은 대규모 재건축을 거쳐 <strong class="text-yellow-400">동대문운동장</strong>으로 다시 태어났습니다. 6만 명을 수용할 수 있는 주경기장과 2만 명 규모의 야구장을 갖춘 현대적 종합 스포츠 시설로, 당시 서울시의 자랑이었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    이 재건축은 <strong class="text-yellow-400">1986년 아시안게임</strong>과 <strong class="text-yellow-400">1988년 서울올림픽</strong>을 대비한 것이었습니다. 특히 1988년 올림픽에서는 축구 경기가 이곳에서 열렸으며, 한국 축구 국가대표팀의 홈 구장으로도 활용되었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">⚽ 프로야구와 프로축구의 요람</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1982년 출범한 프로야구에서 <strong class="text-yellow-400">OB 베어스(현 두산 베어스)</strong>가 이곳을 홈구장으로 사용하며 많은 추억을 만들었습니다. 1985년부터는 MBC 청룡(현 LG 트윈스)도 홈구장으로 사용했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    1983년 출범한 프로축구에서는 할렐루야(현 성남FC 전신), 유공 코끼리(현 제주 유나이티드 전신) 등이 홈구장으로 사용했습니다. 1990년대에는 <strong class="text-yellow-400">LG 치타스</strong>의 홈구장으로, 수많은 명승부가 펼쳐졌습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    특히 2002년 한일 월드컵 때는 프랑스전이 열린 인천 외에, 서울 시내 응원 열기의 중심지 역할을 했으며, 붉은악마의 응원 문화가 꽃피웠습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">📉 기능 상실과 노후화</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2000년대 들어 동대문운동장은 급격히 노후화되었습니다. 1984년 준공된 시설은 20년이 지나며 현대적 경기장 기준에 미달하게 되었고, 2001년 잠실 주경기장이 월드컵 개최지로 선정되며 주요 국제 경기 개최가 어려워졌습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2007년 프로야구 두산 베어스와 LG 트윈스가 잠실야구장으로 홈구장을 이전하며, 동대문운동장의 주요 기능은 사실상 종료되었습니다. 이후 임시 주차장, 벼룩시장 등으로 활용되며 방치에 가까운 상태가 되었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    2007년 11월 26일, 마지막 축구 경기를 끝으로 동대문운동장은 공식 폐장되었습니다. 83년간 이어져 온 이곳의 운동장 역사는 막을 내렸고, 곧 철거의 운명을 맞이하게 됩니다.
+                </p>
+            </div>
+            
+            <div class="border-l-4 border-yellow-400 pl-6 py-4 bg-gray-800/50 rounded">
+                <p class="text-gray-300 italic">
+                    "88올림픽의 환호와 프로스포츠의 열기로 빛났던 동대문운동장. 하지만 시간은 가차 없이 흘러, 이 거대한 콘크리트 구조물은 점차 도심 속 잊힌 유물이 되어갔습니다. 영광과 쇠락 사이, 이 간극에서 우리는 도시 공간의 생명 주기에 대해 질문하게 됩니다."
+                </p>
+            </div>
+        </div>`
+    },
+    {
+        id: 5,
+        title: "철거와 공백의 시대",
+        subtitle: "사라진 기억, 갈등의 현장",
+        era: "2008-2009",
+        description: "철거 과정에서 드러난 상인들의 저항과 도시재생을 둘러싼 논쟁.",
+        color: "#DC143C",
+        historicalContext: `<div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🏗️ 철거 결정과 논란 (2007-2008)</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2007년, 서울시는 노후화된 동대문운동장을 철거하고 그 자리에 <strong class="text-yellow-400">동대문디자인플라자(DDP)</strong>를 건립한다는 계획을 발표했습니다. 세계적 건축가 자하 하디드(Zaha Hadid)가 설계를 맡은 이 프로젝트는 서울을 '디자인 도시'로 만들겠다는 야심찬 구상의 일환이었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    하지만 이 결정은 즉각 <strong class="text-yellow-400">격렬한 반대</strong>에 부딪혔습니다. 인근 동대문시장 상인들은 "운동장이 사라지면 유동인구가 줄어 상권이 붕괴할 것"이라며 반발했습니다. 또한 역사학자들과 시민단체들은 83년 역사의 운동장을 무분별하게 철거하는 것은 역사 말살이라고 비판했습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">⚒️ 철거 과정과 상인들의 저항</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2008년 3월부터 시작된 철거 작업은 순탄하지 않았습니다. 동대문운동장 주변에서 노점과 소규모 점포를 운영하던 <strong class="text-yellow-400">1,500여 상인</strong>들은 생존권 보장을 요구하며 시위를 벌였습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    서울시는 인근에 '동대문종합시장'을 건립하여 이주 대책을 제시했지만, 많은 상인들은 "기존 상권과 단절되어 장사가 안 될 것"이라며 반발했습니다. 2008년 5월, 상인들과 경찰이 충돌하는 과정에서 부상자가 발생하기도 했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    결국 대부분의 상인은 보상금을 받고 떠났지만, 일부는 끝까지 저항하다 강제 퇴거되었습니다. 이 과정에서 <strong class="text-yellow-400">"누구를 위한 재개발인가?"</strong>라는 공공성 논쟁이 불거졌습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🏛️ 발굴 조사와 유적 보존</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2008년 철거 과정에서 지하 유구가 발견되어 긴급 발굴 조사가 시행되었습니다. 조선시대 한양도성의 <strong class="text-yellow-400">이간수문</strong> 석축과 성벽 기단부가 온전히 보존되어 있음이 확인되었고, 이는 학계에 큰 반향을 불러일으켰습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    시민단체와 역사학자들은 이 유구를 현장에 보존해야 한다고 주장했고, 결국 서울시는 설계를 일부 변경하여 지하에 <strong class="text-yellow-400">동대문역사문화공원</strong>을 조성하기로 결정했습니다. 이로 인해 공사는 약 1년 지연되었고, 예산도 증액되었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">💔 상실과 기억의 정치</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    철거 과정은 단순히 건물을 허무는 것이 아니라, <strong class="text-yellow-400">집단 기억을 지우는 행위</strong>였습니다. 83년간 이곳에서 펼쳐진 수많은 경기와 행사, 그리고 주변에서 삶을 꾸려온 상인들의 생활상이 흔적도 없이 사라졌습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    2009년 12월, 동대문운동장의 마지막 잔해가 철거되며 이 땅은 완전한 공백 상태가 되었습니다. 이 공백 위에 어떤 미래가 펼쳐질지, 당시 누구도 확신하지 못했습니다.
+                </p>
+            </div>
+            
+            <div class="border-l-4 border-yellow-400 pl-6 py-4 bg-gray-800/50 rounded">
+                <p class="text-gray-300 italic">
+                    "철거는 폭력입니다. 물리적 구조물만이 아니라, 기억과 정체성, 그리고 생계가 동시에 파괴됩니다. 2008-2009년 이 땅에서 벌어진 일은 개발과 보존, 진보와 전통, 공공의 이익과 개인의 권리 사이에서 균형을 잡는 것이 얼마나 어려운지를 적나라하게 보여주었습니다."
+                </p>
+            </div>
+        </div>`
+    },
+    {
+        id: 6,
+        title: "곡선으로 피어난 미래",
+        subtitle: "자하 하디드의 랜드스케이프",
+        era: "2009-2014 (설계 및 건립)",
+        description: "땅의 풍경(Metonymic Landscape)이라는 철학이 담긴 DDP 건립 과정.",
+        color: "#9B59B6",
+        historicalContext: `<div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🏗️ 자하 하디드와 DDP 설계 철학</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2007년 국제 현상설계 공모에서 영국의 <strong class="text-yellow-400">자하 하디드(Zaha Hadid, 1950-2016)</strong>가 당선되었습니다. 그녀는 이미 건축계의 노벨상이라 불리는 프리츠커상(2004)을 받은 세계적 건축가였으며, 유기적이고 미래지향적인 곡선 건축으로 유명했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    하디드는 DDP의 설계 개념을 <strong class="text-yellow-400">'Metonymic Landscape(환유적 풍경)'</strong>라고 명명했습니다. 이는 건축물이 단순한 구조물이 아니라 <strong class="text-yellow-400">땅의 연장</strong>이며, 서울의 지형과 역사, 한양도성의 흐름을 은유적으로 담아낸다는 의미입니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    특히 DDP의 유려한 곡선은 서울의 산세와 한양도성의 성곽선을 추상화한 것으로, 과거와 현재, 자연과 인공의 경계를 허무는 건축적 실험이었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🔨 건설 과정의 도전</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    DDP 건설은 2009년 3월 착공되었으나, 곧 심각한 난관에 봉착했습니다. 자하 하디드의 복잡한 곡선 구조는 <strong class="text-yellow-400">45,133개의 외장 패널</strong>이 모두 다른 규격과 곡률을 가진 초고난도 건축이었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    각 패널은 밀리미터 단위의 정밀도로 제작되어야 했고, 조립 과정도 순서와 각도가 완벽히 맞아야 했습니다. 이를 위해 <strong class="text-yellow-400">3D BIM(Building Information Modeling)</strong> 기술이 전면 도입되었으며, 한국 건설사상 최초로 전 과정이 디지털 시뮬레이션되었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    공사비는 당초 예산을 크게 초과하여 최종 <strong class="text-yellow-400">약 4,840억 원</strong>이 투입되었고, 공기도 당초 2011년 완공 목표에서 2014년으로 3년 연기되었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🎨 공간 구성과 기능</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    DDP는 총 대지면적 61,074㎡, 연면적 86,574㎡ 규모로, 크게 <strong class="text-yellow-400">알림터, 배움터, 살림터, 디자인장터</strong> 4개 주요 공간으로 구성되었습니다.
+                </p>
+                <ul class="space-y-2 text-gray-300 ml-6 mb-4">
+                    <li><strong class="text-yellow-400">• 알림터:</strong> 전시장과 컨벤션 홀 (지하 3층~지상 4층)</li>
+                    <li><strong class="text-yellow-400">• 배움터:</strong> 디자인 박물관, 디자인 전시관</li>
+                    <li><strong class="text-yellow-400">• 살림터:</strong> 디자인 지원 시설, 창작 스튜디오</li>
+                    <li><strong class="text-yellow-400">• 디자인장터:</strong> 디자인 상품 판매 및 체험 공간</li>
+                </ul>
+                <p class="text-gray-300 leading-relaxed">
+                    외부 공간인 <strong class="text-yellow-400">'동대문역사문화공원'</strong>은 지하 유구를 보존·전시하며, DDP와 유기적으로 연결되어 역사와 현대가 공존하는 독특한 경관을 형성합니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🌟 개관과 세계적 주목 (2014)</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2014년 3월 21일, DDP가 공식 개관했습니다. 개관 행사에는 국내외 디자인·건축계 인사 5,000여 명이 참석했으며, 전 세계 언론의 주목을 받았습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    CNN은 DDP를 <strong class="text-yellow-400">"지구상에서 가장 미래적인 건축물"</strong>이라 평가했고, 영국 가디언지는 "서울의 새로운 랜드마크"로 소개했습니다. 하지만 동시에 막대한 예산 낭비, 주변 상권과의 부조화, 실용성 부족 등의 비판도 제기되었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    무엇보다 <strong class="text-yellow-400">"철거된 운동장과 쫓겨난 상인들의 기억은 어디에 있는가?"</strong>라는 질문이 끊임없이 제기되었습니다.
+                </p>
+            </div>
+            
+            <div class="border-l-4 border-yellow-400 pl-6 py-4 bg-gray-800/50 rounded">
+                <p class="text-gray-300 italic">
+                    "자하 하디드의 곡선은 아름답습니다. 하지만 그 곡선 아래에는 83년 운동장의 역사와, 수십 년 생계를 꾸려온 상인들의 삶이 묻혀 있습니다. DDP는 건축적 성취인 동시에, 우리에게 끊임없이 묻습니다: 도시는 누구의 것인가?"
+                </p>
+            </div>
+        </div>`
+    },
+    {
+        id: 7,
+        title: "질문으로 맺다",
+        subtitle: "누구를 위한 공간인가?",
+        era: "현재 - 미래",
+        description: "DDP 10년, 성공과 논쟁 사이에서 우리가 마주한 질문들.",
+        color: "#C41E3A",
+        historicalContext: `<div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">📊 DDP 10년의 성과</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2014년 개관 이후 2024년까지 DDP는 <strong class="text-yellow-400">누적 방문객 1억 명</strong>을 돌파하며 서울의 대표적 랜드마크로 자리잡았습니다. 특히 SNS에서 '#DDP' 해시태그는 수백만 건이 넘으며, 전 세계 관광객이 찾는 필수 방문지가 되었습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    매년 <strong class="text-yellow-400">서울패션위크, 디자인페스타, 각종 전시와 컨벤션</strong>이 열리며, K-문화 콘텐츠 생산의 플랫폼으로 기능하고 있습니다. 2020년 이후에는 미디어아트와 디지털 전시가 활성화되며, 젊은 세대의 문화 소비 공간으로 자리매김했습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    특히 야간 LED 장미 정원과 미디어 파사드는 서울의 야경 명소로 사랑받으며, 데이트 코스와 관광 코스의 필수 장소가 되었습니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">⚠️ 지속되는 논쟁들</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    하지만 DDP를 둘러싼 논쟁은 여전히 진행 중입니다. 가장 큰 비판은 <strong class="text-yellow-400">"공공성의 부재"</strong>입니다. 관광객과 젊은층은 몰려들지만, 정작 인근 동대문 상인들은 DDP로 인한 임대료 상승과 유동인구 변화로 생계 위협을 받고 있습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    2022년 한 조사에 따르면, DDP 개관 이후 반경 500m 내 전통 시장 점포의 <strong class="text-yellow-400">30%가 폐업</strong>했고, 임대료는 평균 2배 이상 상승했습니다. 대신 대형 프랜차이즈와 관광 상품점이 들어서며 지역 경제 생태계가 왜곡되었다는 지적이 나옵니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    또한 DDP의 운영 적자도 문제입니다. 연간 유지 관리비만 수십억 원이 소요되며, 실제 디자인 산업 육성 효과는 미미하다는 비판이 제기됩니다.
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🤔 "누구를 위한 공간인가?"</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    DDP가 던지는 근본적인 질문은 이것입니다: <strong class="text-yellow-400">도시 공간은 누구를 위해 존재하는가?</strong>
+                </p>
+                <ul class="space-y-3 text-gray-300 ml-6 mb-4">
+                    <li><strong class="text-yellow-400">• 관광객인가, 시민인가?</strong><br>
+                    DDP는 관광객에게는 "인스타그램 핫플"이지만, 시민에게는 일상적으로 사용하기 어려운 공간입니다.</li>
+                    <li><strong class="text-yellow-400">• 글로벌 엘리트인가, 지역 주민인가?</strong><br>
+                    패션위크와 디자인 컨벤션은 화려하지만, 인근 시장 상인과 노점상은 밀려났습니다.</li>
+                    <li><strong class="text-yellow-400">• 미래인가, 과거인가?</strong><br>
+                    최첨단 건축은 미래를 상징하지만, 83년 운동장의 기억은 지워졌습니다.</li>
+                </ul>
+                <p class="text-gray-300 leading-relaxed">
+                    이 질문들에 쉬운 답은 없습니다. 하지만 질문 자체가 중요합니다. <strong class="text-yellow-400">도시재생은 누구를 위한 것이며, 무엇을 보존하고 무엇을 변화시켜야 하는가?</strong>
+                </p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-yellow-400 mb-4">🔮 미래를 향한 제언</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    DDP가 진정한 공공 공간이 되려면 몇 가지 변화가 필요합니다:
+                </p>
+                <ul class="space-y-2 text-gray-300 ml-6 mb-4">
+                    <li><strong class="text-yellow-400">1.</strong> 지역 상인과 주민을 위한 프로그램 확대</li>
+                    <li><strong class="text-yellow-400">2.</strong> 운동장 시절의 기억을 아카이브하고 전시하는 공간 마련</li>
+                    <li><strong class="text-yellow-400">3.</strong> 젠트리피케이션 방지를 위한 정책적 노력</li>
+                    <li><strong class="text-yellow-400">4.</strong> 시민 참여형 문화 프로그램 활성화</li>
+                </ul>
+                <p class="text-gray-300 leading-relaxed">
+                    무엇보다 <strong class="text-yellow-400">이 프로젝트가 바로 그 역할을 합니다.</strong> 미디어 파사드를 통해 잊힌 역사를 조명하고, 빛으로 질문을 던지며, 시민들이 스스로 답을 찾도록 돕는 것. 이것이 우리가 DDP에 바라는 미래입니다.
+                </p>
+            </div>
+            
+            <div class="border-l-4 border-yellow-400 pl-6 py-4 bg-gray-800/50 rounded">
+                <p class="text-gray-300 italic">
+                    "DDP는 완성된 공간이 아닙니다. 여전히 진행 중인 프로젝트이며, 우리 모두가 참여해야 할 도시 실험입니다. 빛으로 과거를 비추고, 질문으로 미래를 열어가는 이 여정에 당신을 초대합니다. 이 땅이 진정 누구의 것인지, 함께 고민해봅시다."
+                </p>
+            </div>
+        </div>`
+    }
+];
+
+
+
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            generateStars();
+            animateHero();
+            generateVideoCards();
+            // populateVideoSelect(); // Removed simulator
+            setupScrollAnimations();
+            // init3DSimulator(); // Removed simulator
+        });
+
+        // Generate background stars
+        function generateStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Animate hero section
+        function animateHero() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            const tl = gsap.timeline();
+            tl.to('#hero-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' })
+                .to('#hero-subtitle', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.5')
+                .to('#hero-cta', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3');
+        }
+
+        // Generate video cards
+        function generateVideoCards() {
+            const grid = document.getElementById('video-grid');
+            videoLayers.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => openModal(video.id);
+
+                card.innerHTML = `
+                    <div class="video-thumbnail" style="
+                        background-image: url('${video.id}.png');
+                        background-size: cover;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        position: relative;
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            background: linear-gradient(135deg, ${video.color}22, ${video.color}88);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">
+                            <div class="play-icon">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="black">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="era-badge">${video.era}</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-white">${video.title}</h3>
+                        <p class="text-gray-300 mb-3 font-semibold">${video.subtitle}</p>
+                        <p class="text-sm text-gray-400 leading-relaxed">${video.description}</p>
+                        <div class="mt-4 flex items-center text-yellow-400 text-sm font-bold">
+                            <span>자세히 보기</span>
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+
+
+        // Modal functions
+        function openModal(id) {
+            const video = videoLayers.find(v => v.id === id);
+            if (!video) return;
+
+            const modal = document.getElementById('video-modal');
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+
+            title.innerHTML = `${video.title} <span class="text-gray-400 text-lg">- ${video.subtitle}</span>`;
+
+            content.innerHTML = `
+                <div>
+                    <div class="flex items-center gap-4 mb-6">
+                        <span class="era-badge">${video.era}</span>
+                    </div>
+                    
+                    <div class="bg-black/50 p-6 rounded-lg mb-6 border border-yellow-700/30">
+                        <h4 class="text-yellow-400 font-bold mb-4 text-2xl">📖 역사적 배경</h4>
+                        <div class="text-gray-300 leading-relaxed text-base">${video.historicalContext}</div>
+                    </div>
+
+                    <div class="flex gap-4 mt-8">
+                        <button onclick="selectVideoForSimulator(${video.id})" class="btn-primary flex-1">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            시뮬레이터에서 보기
+                        </button>
+                        <button class="btn-secondary flex-1" onclick="closeModal()">
+                            닫기
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function selectVideoForSimulator(id) {
+            // Navigate to ddpsimulator.html with the selected video ID
+            window.location.href = `ddpsimulator.html?video=${id}`;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('video-modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Setup scroll animations
+        function setupScrollAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            gsap.utils.toArray('.feature-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 0.8,
+                    delay: i * 0.1,
+                    ease: 'power3.out'
+                });
+            });
+
+            gsap.utils.toArray('.video-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 0.8,
+                    delay: i * 0.1,
+                    ease: 'power3.out'
+                });
+            });
+        }
+
+        // Close modal on outside click
+        document.getElementById('video-modal').addEventListener('click', function (e) {
+            if (e.target === this || e.target.classList.contains('modal-inner')) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+
+</html>

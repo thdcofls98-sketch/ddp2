@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDP: 미래를 비추는 빛의 공간</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #0a0e1a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .text-gradient {
+            background: linear-gradient(to right, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: #FFD700;
+        }
+        
+        .feature-card {
+            background: rgba(20, 20, 30, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            border-color: #FFD700;
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2);
+        }
+        
+        .content-card {
+            background: rgba(20, 20, 30, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+        
+        .content-card:hover {
+            border-color: #FFD700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
+        }
+        
+        .flow-step {
+            position: relative;
+            padding-bottom: 2.5rem;
+        }
+        
+        .flow-step:not(:last-child)::after {
+            content: '↓';
+            position: absolute;
+            bottom: 0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            color: #FFD700;
+        }
+        
+        .diagram-arrow {
+            position: absolute;
+            font-size: 2rem;
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+                max-height: 450px;
+            }
+        }
+        
+        .keyword-card {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .keyword-card:hover {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: #FFD700;
+            transform: translateY(-3px);
+        }
+        
+        .theory-item {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .theory-item:hover {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-xl font-bold text-gradient">DDP × 미래 전시</a>
+            <div class="flex gap-6">
+                <a href="index.html" class="nav-link">홈</a>
+                <a href="info.html" class="nav-link" style="color: #FFD700;">프로젝트 소개</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-24 pb-12 px-4" style="background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 100%);">
+        <div class="container mx-auto max-w-5xl">
+            <h1 class="text-3xl md:text-5xl font-bold text-center mb-4">
+                <span class="text-gradient">DDP: 빛과 기술이 만드는 미래 전시 공간</span>
+            </h1>
+            <h2 class="text-xl md:text-2xl font-light text-center mt-2 text-gray-300">동대문디자인플라자와 AI 뉴미디어아트의 혁신적 융합</h2>
+        </div>
+    </header>
+
+    <main class="container mx-auto max-w-5xl p-4 md:p-8 mt-6">
+
+        <section class="content-card mb-8">
+            <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+                <span class="text-gradient">프로젝트 배경: DDP, 비정형 건축의 미래</span>
+            </h3>
+            <p class="text-base md:text-lg text-gray-300 leading-relaxed text-center max-w-3xl mx-auto">
+                자하 하디드가 설계한 <span class="text-yellow-400 font-bold">동대문디자인플라자(DDP)</span>는 45,133장의 알루미늄 패널로 이루어진 세계 최대의 비정형 건축물입니다. 이 독특한 곡면 구조에 첨단 <span class="text-yellow-400 font-bold">AI 기술과 미디어아트</span>가 결합되면서, DDP는 단순한 건축물을 넘어 미래 전시 공간의 새로운 패러다임을 제시하고 있습니다. 본 프로젝트는 DDP를 중심으로 AI와 뉴미디어아트가 만들어내는 혁신적 공간 경험을 탐구합니다.
+            </p>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="feature-card">
+                <h3 class="text-xl md:text-2xl font-bold mb-4 text-center text-yellow-400">뉴미디어아트의 이해</h3>
+                <p class="text-gray-300 mb-4 text-center">새로운 테크놀로지를 활용하여 제작한 예술로서 시각을 포함한 모든 감각을 사용하는 미디어 통합 예술입니다.</p>
+                <ul class="space-y-2">
+                    <li class="theory-item text-gray-200 font-medium">· 표현 매체: 디지털 기술 활용</li>
+                    <li class="theory-item text-gray-200 font-medium">· 소통 방식: 쌍방향 상호작용</li>
+                    <li class="theory-item text-gray-200 font-medium">· 창작 주체: 예술가+엔지니어+관객</li>
+                    <li class="theory-item text-gray-200 font-medium">· 관객 역할: 감상자→참여자</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3 class="text-xl md:text-2xl font-bold mb-4 text-center text-yellow-400">AI 기반 뉴미디어아트</h3>
+                <p class="text-gray-300 mb-4 text-center">기계학습, 딥러닝, GAN 등의 AI 기술을 통해 구현되는 새로운 형태의 예술 창작입니다.</p>
+                <ul class="space-y-2">
+                    <li class="theory-item text-gray-200 font-medium">· 생성적 적대 신경망(GAN)</li>
+                    <li class="theory-item text-gray-200 font-medium">· 자연어 처리(NLP)</li>
+                    <li class="theory-item text-gray-200 font-medium">· 컴퓨터 비전(Computer Vision)</li>
+                    <li class="theory-item text-gray-200 font-medium">· 실시간 데이터 분석 및 반영</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card mb-8">
+            <h3 class="text-2xl md:text-3xl font-bold mb-6 text-center">
+                <span class="text-gradient">연구 방법론</span>
+            </h3>
+            <div class="space-y-4 max-w-3xl mx-auto">
+                <div class="flow-step">
+                    <div class="feature-card">
+                        <h4 class="text-xl font-bold text-yellow-400 mb-2">Step 1: 문헌 연구</h4>
+                        <p class="text-gray-300">뉴미디어아트, 인공지능, 전시 공간 관련 국내외 학술논문, 기사, 서적 등을 통한 이론적 배경 조사</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="feature-card">
+                        <h4 class="text-xl font-bold text-yellow-400 mb-2">Step 2: 공간 유형 분류</h4>
+                        <p class="text-gray-300">확장된 전시 공간을 동적 관람 공간, 가상공간, 하이브리드 예술 공간으로 구분</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="feature-card">
+                        <h4 class="text-xl font-bold text-yellow-400 mb-2">Step 3: 사례 분석</h4>
+                        <p class="text-gray-300">각 유형별 1-2곳씩 총 5개의 국내외 전시 공간을 선정하여 심층 분석</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-8">
+            <h3 class="text-2xl md:text-3xl font-bold mb-6 text-center">
+                <span class="text-gradient">확장된 전시 공간의 세 가지 유형</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="feature-card">
+                    <h4 class="text-xl font-bold text-yellow-400 mb-3 text-center">1. 동적 관람 공간</h4>
+                    <div class="space-y-2 text-gray-300">
+                        <p class="text-sm">✓ 인터랙티브 작품을 통한 상호작용</p>
+                        <p class="text-sm">✓ 실시간 데이터 분석 기술 활용</p>
+                        <p class="text-sm">✓ 관객 참여로 작품 형태 변화</p>
+                        <p class="text-sm">✓ 살아있는 생태계로서의 공간</p>
+                    </div>
+                    <div class="mt-4 p-3 bg-yellow-900/20 rounded-lg">
+                        <p class="text-xs text-yellow-200 font-semibold">사례:</p>
+                        <p class="text-sm text-gray-300">· 르스페이스 인스파이어</p>
+                        <p class="text-sm text-gray-300">· teamLab Planets TOKYO</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h4 class="text-xl font-bold text-yellow-400 mb-3 text-center">2. 가상 공간</h4>
+                    <div class="space-y-2 text-gray-300">
+                        <p class="text-sm">✓ VR, AR, MR, 메타버스 활용</p>
+                        <p class="text-sm">✓ 물리적 제약 극복</p>
+                        <p class="text-sm">✓ 몰입형 환경 제공</p>
+                        <p class="text-sm">✓ 개인화되는 예술 경험</p>
+                    </div>
+                    <div class="mt-4 p-3 bg-yellow-900/20 rounded-lg">
+                        <p class="text-xs text-yellow-200 font-semibold">사례:</p>
+                        <p class="text-sm text-gray-300">· Musee Dezentral</p>
+                        <p class="text-sm text-gray-300">(Virtual NFT Museum)</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h4 class="text-xl font-bold text-yellow-400 mb-3 text-center">3. 하이브리드 공간</h4>
+                    <div class="space-y-2 text-gray-300">
+                        <p class="text-sm">✓ 물리+디지털 공간 결합</p>
+                        <p class="text-sm">✓ 현실과 가상의 경계 해체</p>
+                        <p class="text-sm">✓ 시공간적으로 확장된 경험</p>
+                        <p class="text-sm">✓ 다양한 인터페이스 활용</p>
+                    </div>
+                    <div class="mt-4 p-3 bg-yellow-900/20 rounded-lg border-2 border-yellow-500">
+                        <p class="text-xs text-yellow-200 font-semibold">핵심 사례:</p>
+                        <p class="text-sm text-yellow-100 font-bold">⭐ DDP 미디어 파사드</p>
+                        <p class="text-sm text-gray-300">· ZKM (독일)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card mb-8">
+            <h3 class="text-2xl md:text-3xl font-bold mb-6 text-center">
+                <span class="text-gradient">핵심 사례 분석</span>
+            </h3>
+            
+            <div class="space-y-6">
+                <div class="keyword-card" style="border: 2px solid #FFD700; background: rgba(255, 215, 0, 0.15);">
+                    <h4 class="font-bold text-yellow-400 mb-2 text-lg">🌟 DDP 서울라이트 미디어 파사드 (서울)</h4>
+                    <p class="text-sm text-gray-300 mb-2">45,133장의 알루미늄 패널, 26대 프로젝터, 50개 스피커</p>
+                    <p class="text-sm text-gray-300 mb-2">비정형 건축물 외벽을 캔버스로 활용한 대규모 미디어아트</p>
+                    <p class="text-sm text-yellow-200">✓ 디자이너, 엔지니어, 음향 전문가 등 다분야 협업</p>
+                    <p class="text-sm text-yellow-200">✓ 3D 스캔 기술로 곡면에 완벽하게 맵핑</p>
+                    <p class="text-sm text-yellow-200">✓ 물리적 공간(건축)과 디지털 공간(영상)의 완벽한 융합</p>
+                </div>
+
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2 text-lg">르스페이스 인스파이어 (인천)</h4>
+                    <p class="text-sm text-gray-300 mb-2">약 2,000평 규모, 18개 전시 공간, SF 테마 세계관</p>
+                    <p class="text-sm text-gray-300">관객의 표정과 움직임에 반응하는 AI 기반 미디어아트, 관객 참여형 체험 중심</p>
+                </div>
+
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2 text-lg">teamLab Planets TOKYO (일본)</h4>
+                    <p class="text-sm text-gray-300 mb-2">'물에 들어가는 뮤지엄, 꽃과 하나가 되는 정원' 테마</p>
+                    <p class="text-sm text-gray-300">실시간 컴퓨터 프로그램으로 그려지는 영상, 관람객 움직임에 따라 영원히 변화하는 작품</p>
+                </div>
+
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2 text-lg">Musee Dezentral (메타버스)</h4>
+                    <p class="text-sm text-gray-300 mb-2">세계 최초 분산형 NFT 박물관, 222개 프레임 구성</p>
+                    <p class="text-sm text-gray-300">블록체인 기술과 3D 환경 결합, 예술가가 자신의 온라인 전시 큐레이팅 가능</p>
+                </div>
+
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2 text-lg">ZKM - 예술미디어센터 (독일 카를스루에)</h4>
+                    <p class="text-sm text-gray-300 mb-2">지상 5층, 길이 500m, 3개 미술관, 5개 연구소</p>
+                    <p class="text-sm text-gray-300">물리적 갤러리와 ZKM Digital(가상공간)을 동시 운영하는 하이브리드 전시 플랫폼</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card mb-8">
+            <h3 class="text-2xl md:text-3xl font-bold mb-6 text-center">
+                <span class="text-gradient">AI와 뉴미디어아트가 제기하는 질문들</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2">창작의 주체</h4>
+                    <p class="text-sm text-gray-300">기계가 예술을 생성하는 주체가 될 수 있는가?</p>
+                </div>
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2">예술의 진정성</h4>
+                    <p class="text-sm text-gray-300">AI가 학습한 작품의 저작권과 창작물의 진정성은?</p>
+                </div>
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2">작가의 역할 변화</h4>
+                    <p class="text-sm text-gray-300">예술가는 프로그래머이자 큐레이터로 재정의되는가?</p>
+                </div>
+                <div class="keyword-card">
+                    <h4 class="font-bold text-yellow-400 mb-2">관객 경험의 혁신</h4>
+                    <p class="text-sm text-gray-300">수동적 감상에서 능동적 참여와 공동 창작으로</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="content-card mb-8">
+            <h3 class="text-2xl md:text-3xl font-bold mb-6 text-center">
+                <span class="text-gradient">연구 결과: AI와 뉴미디어아트의 융합 효과</span>
+            </h3>
+            <p class="text-center text-gray-300 mb-8 max-w-3xl mx-auto">AI 기술과 뉴미디어아트의 융합은 전시 공간의 물리적, 가상적, 개념적 경계를 확장시키며 새로운 예술적 가능성을 제시합니다.</p>
+            
+            <div class="relative max-w-3xl mx-auto p-4 md:p-8">
+                <div class="grid grid-cols-2 gap-4 md:gap-8">
+                    <div class="feature-card">
+                        <span class="text-xs font-semibold text-yellow-400">물리적 확장</span>
+                        <h4 class="text-lg md:text-xl font-bold text-white mt-2">동적 관람 공간</h4>
+                        <p class="text-sm md:text-base text-gray-300 mt-2">화이트큐브를 벗어나 상호작용하는 살아있는 생태계로 전환</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="text-xs font-semibold text-yellow-400">가상적 확장</span>
+                        <h4 class="text-lg md:text-xl font-bold text-white mt-2">메타버스 전시</h4>
+                        <p class="text-sm md:text-base text-gray-300 mt-2">물리적 제약 극복, 시공간적 경계를 초월한 무한한 창작 실험</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="text-xs font-semibold text-yellow-400">개념적 확장</span>
+                        <h4 class="text-lg md:text-xl font-bold text-white mt-2">예술의 재정의</h4>
+                        <p class="text-sm md:text-base text-gray-300 mt-2">창의성, 작가성, 진정성에 대한 새로운 미학적 논의 촉발</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="text-xs font-semibold text-yellow-400">사회적 확장</span>
+                        <h4 class="text-lg md:text-xl font-bold text-white mt-2">공동 창작의 장</h4>
+                        <p class="text-sm md:text-base text-gray-300 mt-2">예술가와 관객, 글로벌 커뮤니티가 함께 참여하는 집합적 예술</p>
+                    </div>
+                </div>
+                
+                <div class="diagram-arrow" style="top: 25%; left: 48%; transform: translate(-50%, -50%);">→</div>
+                <div class="diagram-arrow" style="top: 75%; left: 48%; transform: translate(-50%, -50%);">→</div>
+                <div class="diagram-arrow" style="top: 50%; left: 23%; transform: translate(-50%, -50%) rotate(90deg);">↓</div>
+                <div class="diagram-arrow" style="top: 50%; left: 77%; transform: translate(-50%, -50%) rotate(90deg);">↓</div>
+            </div>
+        </section>
+
+        <section class="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-700/30 rounded-2xl p-6 md:p-8">
+            <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center text-yellow-400">프로젝트 결론 및 DDP의 미래</h3>
+            <p class="text-base md:text-lg text-gray-200 leading-relaxed text-center max-w-3xl mx-auto mb-4">
+                <span class="text-yellow-400 font-bold">동대문디자인플라자(DDP)</span>는 자하 하디드의 비정형 건축과 첨단 미디어 기술이 만나 <span class="text-yellow-400 font-bold">물리적 공간의 한계를 초월한 새로운 전시 공간</span>을 창조합니다. 본 프로젝트는 DDP를 중심으로 AI와 뉴미디어아트의 융합이 예술 공간의 본질적 변화를 야기하며, <span class="text-yellow-400 font-bold">미래 전시 공간의 방향성</span>을 제시함을 보여줍니다.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div class="text-center">
+                    <p class="text-yellow-400 font-bold text-lg mb-1">DDP의 혁신</p>
+                    <p class="text-sm text-gray-300">건축과 디지털의 완벽한 융합 사례</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-yellow-400 font-bold text-lg mb-1">공간 확장</p>
+                    <p class="text-sm text-gray-300">물리적 경계를 넘어선 무한한 가능성</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-yellow-400 font-bold text-lg mb-1">미래 비전</p>
+                    <p class="text-sm text-gray-300">AI 시대 예술 공간의 새로운 패러다임</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center p-6 text-gray-500 text-sm mt-8">
+        <p>DDP Future Exhibition Project | 동대문디자인플라자와 AI 뉴미디어아트의 융합</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const tooltipTitleCallback = {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                if (Array.isArray(label)) {
+                                  return label.join(' ');
+                                } else {
+                                  return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            const colors = {
+                gold: '#FFD700',
+                orange: '#FFA500',
+                darkGold: '#B8860B',
+                lightGold: '#FFE87C'
+            };
+
+            // Scroll animations
+            gsap.registerPlugin(ScrollTrigger);
+
+            gsap.utils.toArray('.feature-card, .content-card, .keyword-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 0.8,
+                    delay: i * 0.1,
+                    ease: 'power3.out'
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
